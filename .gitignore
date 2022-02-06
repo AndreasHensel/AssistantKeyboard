@@ -1,0 +1,15 @@
+
+KiCAD/fp-info-cache
+*.gbl
+*.gbs
+*.gbp
+*.gbo
+*.zip
+*.gm1
+*.gtl
+*.gts
+*.drl
+*.gbr
+*.gtp
+*.gto
+*.bak

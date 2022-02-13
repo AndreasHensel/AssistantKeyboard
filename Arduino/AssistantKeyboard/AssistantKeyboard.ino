@@ -29,6 +29,8 @@ const char AK_VER[] ="v0.1 ";
 // Anzahl der Tasten (3x3 Tasten, Drehencoder-Taste)
 const int AK_KEYCOUNT = 10;
 
+const int AK_KEYDEBOUNCE = 120;
+
 // onboard LEDs
 const int PIN_RX_LED = 17;
 const int PIN_TX_LED = 30;
@@ -39,8 +41,11 @@ const int PIN_AK_ENCODERB = 1;
 const int PIN_AK_ENCODERP = 4;
 
 // Pins Tastenmatrix
-const int AK_KEYCOLUMN [3] = {10,16,14};
-const int AK_KEYROW [3] = {6,7,8};
+const int AK_KEYCOLUMNCOUNT = 3;
+const int AK_KEYROWCOUNT = 3;
+const int PIN_AK_KEYCOLUMN [AK_KEYCOLUMNCOUNT] = {10,16,14};
+const int PIN_AK_KEYROW [AK_KEYROWCOUNT] = {6,7,8};
+// **debug  in die include-Datei verlagern?
 
 // **  Include für Ausführung
 #include <Test.h>
@@ -52,6 +57,10 @@ const int AK_MODETEXTY = 0;
 // Textpostionen der Tastenbeschriftung
 const int AK_KEYTEXTX[AK_KEYCOUNT] = {8,8,48,90,8,48,90,8,48,90};
 const int AK_KEYTEXTY[AK_KEYCOUNT] = {0,2,2,2,4,4,4,6,6,6};
+
+// Spezielle Tasten
+const int AK_SETUPENTERKEY = 9;
+const int AK_SETUPCANCELKEY = 1;
 
 // ** Variablen
 // OLED
@@ -82,6 +91,18 @@ void setup()
 // LED
   pinMode(PIN_RX_LED, OUTPUT);
   pinMode(PIN_TX_LED, OUTPUT);
+
+// Tasten
+  for (int i=0; i<AK_KEYCOLUMNCOUNT; i++)
+  {
+    pinMode(PIN_AK_KEYCOLUMN[i],INPUT_PULLUP);
+  };
+  for (int i=0; i<AK_KEYROWCOUNT; i++)
+  {
+    pinMode(PIN_AK_KEYROW[i],OUTPUT);
+    digitalWrite(PIN_AK_KEYROW[i],true);
+  };
+
 // Rotary
   pinMode(PIN_AK_ENCODERA, INPUT_PULLUP);
   pinMode(PIN_AK_ENCODERB, INPUT_PULLUP);
@@ -107,28 +128,28 @@ void setup()
   AK_Oled.print(AK_VER);
   AK_Oled.print(AK_VARIANT);
   AK_Oled.update();
-  delay(2000);
+  delay(1500);
 
 };
 
 void loop()
 {
 // LEDs für Debug
-  digitalWrite(PIN_RX_LED, AK_SetupMode);
-  digitalWrite(PIN_TX_LED, false);
+  digitalWrite(PIN_RX_LED, !AK_SetupMode);
+//  digitalWrite(PIN_TX_LED, true);
 
 // Entprellen
+  delay(AK_KEYDEBOUNCE);
 
-  delay(200);
 // Tasten einlesen
   AK_KeyRead();
   AK_KeyProcess();
   AK_RotaryRead();
 
 // ***debug
-AK_Oled.setCursor(0,5);
-AK_Oled.print(AK_KeyPressed[0]);
-AK_Oled.update();
+//AK_Oled.setCursor(0,5);
+//AK_Oled.print(AK_KeyIsPressed[1]);
+//AK_Oled.update();
 
   // Funktionen aufrufen
   if (AK_SetupMode)
@@ -145,9 +166,13 @@ AK_Oled.update();
     }
 
     // Setup-Mode fertig?
-    if (AK_KeyPressed[0])
+    if (AK_KeyReleased[0] && !AK_KeyIsPressed[AK_SETUPENTERKEY])
     {
       AK_Mode = AK_ModeSelect;
+      AK_SetupMode = false;
+    }
+    if (AK_KeyReleased[AK_SETUPCANCELKEY])
+    {
       AK_SetupMode = false;
     }
 
@@ -187,56 +212,65 @@ AK_Oled.update();
       AK_DrawKeyText();
       AK_SetupModeOn = false;
     }
-// 
-    if (AK_EncoderUp)
-    {
-      AK_EncoderUpAction(AK_Mode);
-    };
-    
-if (AK_EncoderDown)
-    {
-      AK_EncoderDownAction(AK_Mode);
-    };
-    
 
-    for (int Key=0; Key<AK_KEYCOUNT ;Key++)
+//  Setup aufrufen
+    if (AK_KeyIsPressed[0] && AK_KeyPressed[AK_SETUPENTERKEY])
     {
-// wurde eine Taste gedrückt: Aktion aufrufen
-      if (AK_KeyPressed[Key])
+      AK_SetupMode = true;
+    }
+    else
+  
+  // normaler Betrieb
       {
-        AK_UpdateKey(Key);
-        switch (Key)
+      if (AK_EncoderUp)
+      {
+        AK_EncoderUpAction(AK_Mode);
+      };
+      
+  if (AK_EncoderDown)
+      {
+        AK_EncoderDownAction(AK_Mode);
+      };
+      
+      for (int Key=0; Key<AK_KEYCOUNT ;Key++)
+      {
+  // wurde eine Taste gedrückt: Aktion aufrufen
+        if (AK_KeyPressed[Key])
         {
-          case 0: AK_Key0PressAction(AK_Mode); break;
-          case 1: AK_Key1PressAction(AK_Mode); break;
-          case 2: AK_Key2PressAction(AK_Mode); break;
-          case 3: AK_Key3PressAction(AK_Mode); break;
-          case 4: AK_Key4PressAction(AK_Mode); break;
-          case 5: AK_Key5PressAction(AK_Mode); break;
-          case 6: AK_Key6PressAction(AK_Mode); break;
-          case 7: AK_Key7PressAction(AK_Mode); break;
-          case 8: AK_Key8PressAction(AK_Mode); break;
-          case 9: AK_Key9PressAction(AK_Mode); break;
+          AK_UpdateKey(Key);
+          switch (Key)
+          {
+            case 0: AK_Key0PressAction(AK_Mode); break;
+            case 1: AK_Key1PressAction(AK_Mode); break;
+            case 2: AK_Key2PressAction(AK_Mode); break;
+            case 3: AK_Key3PressAction(AK_Mode); break;
+            case 4: AK_Key4PressAction(AK_Mode); break;
+            case 5: AK_Key5PressAction(AK_Mode); break;
+            case 6: AK_Key6PressAction(AK_Mode); break;
+            case 7: AK_Key7PressAction(AK_Mode); break;
+            case 8: AK_Key8PressAction(AK_Mode); break;
+            case 9: AK_Key9PressAction(AK_Mode); break;
+          };
+        };
+  // wurde eine Taste losgelassen: Aktion aufrufen
+        if (AK_KeyReleased[Key])
+        {
+          AK_UpdateKey(Key);
+          switch (Key)
+          {
+            case 0: AK_Key0ReleaseAction(AK_Mode); break;
+            case 1: AK_Key1ReleaseAction(AK_Mode); break;
+            case 2: AK_Key2ReleaseAction(AK_Mode); break;
+            case 3: AK_Key3ReleaseAction(AK_Mode); break;
+            case 4: AK_Key4ReleaseAction(AK_Mode); break;
+            case 5: AK_Key5ReleaseAction(AK_Mode); break;
+            case 6: AK_Key6ReleaseAction(AK_Mode); break;
+            case 7: AK_Key7ReleaseAction(AK_Mode); break;
+            case 9: AK_Key9ReleaseAction(AK_Mode); break;
+          };
         };
       };
-// wurde eine Taste losgelassen: Aktion aufrufen
-      if (AK_KeyReleased[Key])
-      {
-        AK_UpdateKey(Key);
-        switch (Key)
-        {
-          case 0: AK_Key0ReleaseAction(AK_Mode); break;
-          case 1: AK_Key1ReleaseAction(AK_Mode); break;
-          case 2: AK_Key2ReleaseAction(AK_Mode); break;
-          case 3: AK_Key3ReleaseAction(AK_Mode); break;
-          case 4: AK_Key4ReleaseAction(AK_Mode); break;
-          case 5: AK_Key5ReleaseAction(AK_Mode); break;
-          case 6: AK_Key6ReleaseAction(AK_Mode); break;
-          case 7: AK_Key7ReleaseAction(AK_Mode); break;
-          case 9: AK_Key9ReleaseAction(AK_Mode); break;
-        };
-      };
-    };
+      }
     AK_Oled.update();
   };
   
@@ -298,9 +332,6 @@ void AK_PrintKey(int Key)
     case 2:
       AK_Oled.print(AK_KEYTEXT2[Key]);
       break;
-//    case 3: AK_Oled.print(AK_KEYTEXT3[Key]);
-//    case 4: AK_Oled.print(AK_KEYTEXT4[Key]);
-//    case 5: AK_Oled.print(AK_KEYTEXT5[Key]);
   };
 };
 
@@ -323,15 +354,23 @@ void AK_DrawSetup()
     AK_Oled.print(AK_MODETEXT[i]);
     AK_Oled.invertText(false);
   } ;  
-
   AK_Oled.update();
 };
 
 // ** Tasten einlesen
 void AK_KeyRead()
 {
-AK_KeyIsPressed[0] = !digitalRead(PIN_AK_ENCODERP);
-//  AK_KeyIsPressed[1] = digitalRead(AK_Key1);
+  AK_KeyIsPressed[0] = !digitalRead(PIN_AK_ENCODERP);
+
+  for (int i=0; i<AK_KEYROWCOUNT; i++)
+  {
+    digitalWrite(PIN_AK_KEYROW[i],false);
+    for (int j=0; j<AK_KEYCOLUMNCOUNT; j++)
+    {
+      AK_KeyIsPressed[(i*AK_KEYROWCOUNT)+j+1]= !digitalRead(PIN_AK_KEYCOLUMN[j]);
+    };
+    digitalWrite(PIN_AK_KEYROW[i],true);
+  };
 };
 
 // ** Tasten auswerten
@@ -355,9 +394,6 @@ void AK_RotaryRead()
   int EncoderValue = AK_Encoder.read();
   AK_EncoderUp = (EncoderValue > 0);
   AK_EncoderDown = (EncoderValue < 0);
-//    AK_Oled.setCursor(0,6);
-//    AK_Oled.print(EncoderValue);
-//    AK_Oled.update();
-AK_Encoder.write(0);
+  AK_Encoder.write(0);
 };
 

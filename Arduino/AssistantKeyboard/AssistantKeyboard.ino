@@ -1,6 +1,6 @@
 // AssistantKeyboard
 //
-// für Hardware Version 0.1
+// für Hardware Version 0.9
 //
 // die Sketch-Projektdatei enthält das Basisprogramm mit allen grundlegenden Funktionen
 // Verschiedene Ausführungen der Konfiguration wird durch das entsprechende Include festgelegt.
@@ -23,7 +23,7 @@
 
 // ** Konstanten
 // Version der Software
-const char AK_VER[] = "v0.1 ";
+const char AK_VER[] = "v0.9 ";
 
 // ** Hardware-Definition
 // Anzahl der Tasten (3x3 Tasten, Drehencoder-Taste)

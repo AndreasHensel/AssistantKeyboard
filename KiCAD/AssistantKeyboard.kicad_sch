@@ -6,8 +6,8 @@
 
   (title_block
     (title "AssistantKeyboard")
-    (date "2022-02-26")
-    (rev "0.9")
+    (date "2022-03-13")
+    (rev "1.0")
   )
 
   (lib_symbols

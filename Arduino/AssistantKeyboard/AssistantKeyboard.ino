@@ -23,21 +23,21 @@
 
 // ** Konstanten
 // Version der Software
-const char AK_VER[] = "v0.9 ";
+const char AK_VER[] = "v1.0 ";
 
 // ** Hardware-Definition
 // Anzahl der Tasten (3x3 Tasten, Drehencoder-Taste)
 const int AK_KEYCOUNT = 10;
 
-const int AK_KEYDEBOUNCE = 120;
+// const int AK_KEYDEBOUNCE = 1;
 
 // onboard LEDs
 const int PIN_RX_LED = 17;
 const int PIN_TX_LED = 30;
 
 // Pins Drehencoder
-const int PIN_AK_ENCODERA = 0;
-const int PIN_AK_ENCODERB = 1;
+const int PIN_AK_ENCODERA = 1;
+const int PIN_AK_ENCODERB = 0;
 const int PIN_AK_ENCODERP = 4;
 
 // Pins Tastenmatrix
@@ -47,7 +47,7 @@ const int PIN_AK_KEYCOLUMN[AK_KEYCOLUMNCOUNT] = { 10, 16, 14 };
 const int PIN_AK_KEYROW[AK_KEYROWCOUNT] = { 6, 7, 8 };
 
 // **  Include für Ausführung
-#include <Test.h>
+#include <IBF.h>
 
 // ** Textpositionen
 // Textposition für die Anzeige des aktuellen Modus im Grundbild
@@ -71,6 +71,7 @@ Encoder AK_Encoder(PIN_AK_ENCODERA, PIN_AK_ENCODERB);
 // allgemeine globale Variablen
 int AK_Mode = 0;
 int AK_ModeSelect = 0;
+int AK_LastEncoderValue;
 bool AK_SetupMode = true;
 bool AK_SetupModeOn = false;
 
@@ -86,9 +87,11 @@ bool AK_EncoderDown = false;
 
 void setup() {
   // ** Pinmodes
+
   // LED for ***debug
   // pinMode(PIN_RX_LED, OUTPUT);
   // pinMode(PIN_TX_LED, OUTPUT);
+  // Serial.begin(9600);
 
   // pinmode für Tasten
   for (int i = 0; i < AK_KEYCOLUMNCOUNT; i++) {
@@ -100,7 +103,7 @@ void setup() {
     digitalWrite(PIN_AK_KEYROW[i], true);
   };
 
-  // Rotary
+  // ** Rotary
   pinMode(PIN_AK_ENCODERA, INPUT_PULLUP);
   pinMode(PIN_AK_ENCODERB, INPUT_PULLUP);
   pinMode(PIN_AK_ENCODERP, INPUT_PULLUP);
@@ -132,17 +135,12 @@ void loop() {
   // digitalWrite(PIN_TX_LED, true);
 
   // Entprellen
-  delay(AK_KEYDEBOUNCE);
+  //delay(AK_KEYDEBOUNCE);
 
   // Tasten einlesen
   AK_KeyRead();
   AK_KeyProcess();
   AK_RotaryRead();
-
-  // ***debug
-  //AK_Oled.setCursor(0,5);
-  //AK_Oled.print(AK_KeyIsPressed[1]);
-  //AK_Oled.update();
 
   // Funktionen aufrufen
   if (AK_SetupMode)
@@ -153,6 +151,7 @@ void loop() {
       Keyboard.releaseAll();
       Keyboard.end();
       Consumer.end();
+      Mouse.end();
       AK_DrawSetup();
       AK_ModeSelect = AK_Mode;
       AK_SetupModeOn = true;
@@ -169,6 +168,7 @@ void loop() {
       AK_SetupMode = false;
     }
 
+    // vorherigen Eintrag anwählen
     if (AK_EncoderDown)
     {
       if (AK_ModeSelect <= 0)
@@ -181,6 +181,7 @@ void loop() {
       };
     }
 
+    // nächsten Eintrag wählen
     if (AK_EncoderUp)
     {
       AK_ModeSelect++;
@@ -190,6 +191,7 @@ void loop() {
       };
     };
 
+    // Anzeige aktualisieren
     if (AK_EncoderUp | AK_EncoderDown)
     {
       AK_DrawSetup();
@@ -202,6 +204,7 @@ void loop() {
     {
       Keyboard.begin();
       Consumer.begin();
+      Mouse.begin();
       AK_DrawKeyText();
       AK_SetupModeOn = false;
     }
@@ -258,14 +261,15 @@ void loop() {
             case 5: AK_Key5ReleaseAction(AK_Mode); break;
             case 6: AK_Key6ReleaseAction(AK_Mode); break;
             case 7: AK_Key7ReleaseAction(AK_Mode); break;
+            case 8: AK_Key8ReleaseAction(AK_Mode); break;
             case 9: AK_Key9ReleaseAction(AK_Mode); break;
           };
         };
       };
     }
-    AK_Oled.update();
   };
 };
+// END-OF-LOOP
 
 // ** Tastenstatus anzeigen
 void AK_UpdateKey(int Key)
@@ -273,6 +277,7 @@ void AK_UpdateKey(int Key)
   AK_Oled.invertText(AK_KeyPressed[Key]);
   AK_PrintKey(Key);
   AK_Oled.invertText(false);
+  AK_Oled.update();
 };
 
 // ** Tastentexte anzeigen
@@ -323,14 +328,14 @@ void AK_DrawSetup()
   AK_Oled.invertText(false);
   AK_Oled.setScale(1);
   AK_Oled.home();
-  AK_Oled.print("Modus wählen:");
+  AK_Oled.print("Modus-Wahl:");
   AK_Oled.setCursor(48, 3);
   for (int i = 0; i < AK_MODECOUNT; i++)
   {
-    AK_Oled.invertText(i == AK_ModeSelect);
     AK_Oled.setCursor(32, i + 2);
     AK_Oled.print(i);
     AK_Oled.setCursor(40, i + 2);
+    AK_Oled.invertText(i == AK_ModeSelect);
     AK_Oled.print(AK_MODETEXT[i]);
     AK_Oled.invertText(false);
   };
@@ -373,7 +378,17 @@ void AK_KeyProcess()
 void AK_RotaryRead()
 {
   int EncoderValue = AK_Encoder.read();
-  AK_EncoderUp = (EncoderValue > 0);
+//  Serial.println(EncoderValue);
+  // AK_EncoderUp = (EncoderValue > 0) && (AK_LastEncoderValue == 0);
+  // AK_EncoderDown = (EncoderValue < 0) && (AK_LastEncoderValue == 0);
+  // AK_LastEncoderValue = EncoderValue;
+  // AK_Encoder.write(0);
+  AK_EncoderUp = (EncoderValue > 0) ;
   AK_EncoderDown = (EncoderValue < 0);
-  AK_Encoder.write(0);
+  if (EncoderValue !=0)
+  { 
+    delay(150);
+    AK_Encoder.write(0);
+  }
 };
+  

@@ -13,3 +13,5 @@ KiCAD/fp-info-cache
 *.gtp
 *.gto
 *.bak
+Arduino/AssistanKeyboardVariantsLibrary/IBF.h
+Arduino/AssistanKeyboardVariantsLibrary/Test.h

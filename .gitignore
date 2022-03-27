@@ -17,6 +17,4 @@ Arduino/AssistanKeyboardVariantsLibrary/IBF.h
 Arduino/AssistanKeyboardVariantsLibrary/Test.h
 *.FCStd1
 *.gcode
-FreeCAD/AssistantKeyboard_Case - Kopie2.FCStd
-FreeCAD/AssistantKeyboard_Case - Kopie1.FCStd
-FreeCAD/AssistantKeyboard_Case - Kopie.FCStd
+old

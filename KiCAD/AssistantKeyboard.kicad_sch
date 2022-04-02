@@ -7,7 +7,7 @@
   (title_block
     (title "AssistantKeyboard")
     (date "2022-03-13")
-    (rev "1.0")
+    (rev "1.1")
   )
 
   (lib_symbols
@@ -757,7 +757,6 @@
       )
     )
   )
-
 
   (junction (at 76.2 95.25) (diameter 0) (color 0 0 0 0)
     (uuid 0cd0f02c-77db-4f55-b046-bdaf6b682091)

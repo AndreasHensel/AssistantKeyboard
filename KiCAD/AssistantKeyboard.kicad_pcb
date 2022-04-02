@@ -5,10 +5,6 @@
   )
 
   (paper "A4")
-  (title_block
-    (comment 4 "AISLER Project ID: SNZYUZXY")
-  )
-
   (layers
     (0 "F.Cu" signal)
     (31 "B.Cu" signal)
@@ -972,7 +968,7 @@
   (gr_text "SCK" (at 109.22 67.056 90) (layer "F.SilkS") (tstamp 51c37ad9-917f-49f1-bef8-d1a178a14e24)
     (effects (font (size 1.5 1.5) (thickness 0.3)))
   )
-  (gr_text "AssistantKeyboard\nby A. Hensel\nv.1.0" (at 111.252 49.53) (layer "F.SilkS") (tstamp 5b4720b9-032e-439f-adbe-59f2662594a0)
+  (gr_text "AssistantKeyboard\nby A. Hensel\nv.1.1" (at 111.252 49.53) (layer "F.SilkS") (tstamp 5b4720b9-032e-439f-adbe-59f2662594a0)
     (effects (font (size 1.2 1.2) (thickness 0.15)))
   )
   (gr_text "Display I²C" (at 115.57 66.802 90) (layer "F.SilkS") (tstamp 5f018de3-1552-4135-a3eb-37a3706e4ab5)

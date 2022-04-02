@@ -1,6 +1,6 @@
 // AssistantKeyboard
 //
-// für Hardware Version 0.9
+// für Hardware Version 1.1
 //
 // die Sketch-Projektdatei enthält das Basisprogramm mit allen grundlegenden Funktionen
 // Verschiedene Ausführungen der Konfiguration wird durch das entsprechende Include festgelegt.
@@ -23,7 +23,7 @@
 
 // ** Konstanten
 // Version der Software
-const char AK_VER[] = "v1.0 ";
+const char AK_VER[] = "v1.1 ";
 
 // ** Hardware-Definition
 // Anzahl der Tasten (3x3 Tasten, Drehencoder-Taste)
@@ -378,16 +378,11 @@ void AK_KeyProcess()
 void AK_RotaryRead()
 {
   int EncoderValue = AK_Encoder.read();
-//  Serial.println(EncoderValue);
-  // AK_EncoderUp = (EncoderValue > 0) && (AK_LastEncoderValue == 0);
-  // AK_EncoderDown = (EncoderValue < 0) && (AK_LastEncoderValue == 0);
-  // AK_LastEncoderValue = EncoderValue;
-  // AK_Encoder.write(0);
   AK_EncoderUp = (EncoderValue > 0) ;
   AK_EncoderDown = (EncoderValue < 0);
   if (EncoderValue !=0)
   { 
-    delay(150);
+    delay(100);
     AK_Encoder.write(0);
   }
 };
